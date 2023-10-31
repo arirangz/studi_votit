@@ -5,3 +5,4 @@ define('DB_USER', 'root');
 define('DB_PASSWORD', '');
 
 define('PATH_ASSETS_IMAGES', '/assets/images/');
+define('HOME_POLLS_LIMIT', 3);
