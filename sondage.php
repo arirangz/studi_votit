@@ -1,5 +1,5 @@
-<?php require_once 'templates/header.php';
-
+<?php 
+require_once 'lib/required_files.php';
 require_once 'lib/poll.php';
 
 $error404 = false;
@@ -9,8 +9,7 @@ if (isset($_GET['id'])) {
     $poll = getPollById($pdo, $id);
 
     if ($poll) {
-
-
+        $pageTitle = $poll['title'];
         $results = getPollResultsByPollId($pdo, $id);
     } else {
         $error404 = true;
@@ -20,7 +19,7 @@ if (isset($_GET['id'])) {
     $error404 = true;
 }
 
-
+require_once 'templates/header.php';
 
 
 
@@ -36,10 +35,13 @@ if (!$error404) {
     <div class="col-10 col-sm-8 col-lg-6">
         <h2>Résultats</h2>
         <div class="results">
-            <h3>Prop 1</h3>
-            <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar progress-bar-striped progress-color-2" style="width: 25%">PROP 125%</div>
-            </div>
+            <?php foreach ($results as $index => $result) { ?>
+                <h3><?=$result['name'] ?></h3>
+                <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar progress-bar-striped progress-color-<?=$index?>" style="width: 25%"><?=$result['name'] ?> 25%</div>
+                </div>  
+            <?php } ?>
+
         </div>
     </div>
 
