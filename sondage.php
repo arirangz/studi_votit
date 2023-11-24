@@ -4,16 +4,30 @@ require_once 'lib/poll.php';
 
 $error404 = false;
 
+$messages = [];
+$errors = [];
+
 if (isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $poll = getPollById($pdo, $id);
 
     if ($poll) {
         $pageTitle = $poll['title'];
-        
+
         if (isset($_SESSION['user']) && isset($_POST['voteSubmit'])) {
-            removeVotesByPollIdAndUserId($pdo, $id, (int)$_SESSION['user']['id']);
-            $res = addVote($pdo, (int)$_SESSION['user']['id'], $_POST['items']);
+            if (empty($_POST['items'])) {
+                $errors[] = "Vous devez sélectionner au moins une proposition";
+            } else {
+                removeVotesByPollIdAndUserId($pdo, $id, (int)$_SESSION['user']['id']);
+                $resAddVote = addVote($pdo, (int)$_SESSION['user']['id'], $_POST['items']);
+                if ($resAddVote) {
+                    $messages[] =  "Votre vote a bien été pris en compte.";
+                } else {
+                    $errors[] = "Une erreur est survenue pendant l'ajout du vote.";
+                }
+            }
+
+
         }
 
         $results = getPollResultsByPollId($pdo, $id);
@@ -66,13 +80,27 @@ if (!$error404) {
                             <h3><?= $poll['title']; ?></h3>
                             <div class="btn-group" role="group" aria-label="Basic checkbox toggle button group">
                                 <?php foreach ($items as $key => $item) { ?>
-                                    <input type="checkbox" class="btn-check" id="btncheck<?=$item['id'] ?>" autocomplete="off" value="<?=$item['id'] ?>" name="items[]">
-                                    <label class="btn btn-outline-primary" for="btncheck<?=$item['id'] ?>"><?=$item['name'] ?></label>
+                                    <input type="checkbox" class="btn-check" id="btncheck<?= $item['id'] ?>" autocomplete="off" value="<?= $item['id'] ?>" name="items[]">
+                                    <label class="btn btn-outline-primary" for="btncheck<?= $item['id'] ?>"><?= $item['name'] ?></label>
                                 <?php } ?>
                             </div>
+                            <?php if ($messages) { ?>
+                                <?php foreach ($messages as $message) { ?>
+                                    <div class="alert alert-success mt-2" role="alert">
+                                        <?=$message?>
+                                    </div>
+                                <?php } ?>
+                            <?php } ?>
+                            <?php if ($errors) { ?>
+                                <?php foreach ($errors as $error) { ?>
+                                    <div class="alert alert-danger mt-2" role="alert">
+                                        <?=$error?>
+                                    </div>
+                                <?php } ?>
+                            <?php } ?>
                             <div class="mt-2">
                                 <input type="submit" name="voteSubmit" class="btn btn-primary" value="Voter">
-                            </div>  
+                            </div>
                         </form>
                     </div>
                 <?php } else { ?>
