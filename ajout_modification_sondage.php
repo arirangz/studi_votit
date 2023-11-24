@@ -29,8 +29,12 @@ $item = [
 
 if (isset($_POST['savePoll'])) {
 
-
-    $res = savePoll($pdo, $_POST['title'], $_POST['description'], $_POST['category_id'], (int)$_SESSION['user']['id']);
+    if (isset($_GET['id'])) {
+        $id = $_GET['id'];
+    } else {
+        $id = null;
+    }
+    $res = savePoll($pdo, $_POST['title'], $_POST['description'], $_POST['category_id'], (int)$_SESSION['user']['id'], $id);
     if ($res) {
         header('Location: ajout_modification_sondage.php?id=' . $res);
     } else {

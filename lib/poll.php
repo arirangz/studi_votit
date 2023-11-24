@@ -101,23 +101,35 @@ function removeVotesByPollIdAndUserId(PDO $pdo, int $poll_id, int $user_id)
     return $query->execute();
 }
 
-function savePoll(PDO $pdo, string $title, string $description, 
-                    int $category_id, int $user_id):bool|int
-{
-    $query = $pdo->prepare('INSERT INTO poll(title, description, category_id, user_id) 
-    VALUES(:title, :description, :category_id, :user_id)');
+function savePoll(PDO $pdo, string $title, string $description, int $category_id, int $user_id, int $id=null): bool|int
+{   
 
-    $query->bindValue(':title', $title, PDO::PARAM_STR);
-    $query->bindValue(':description', $description, PDO::PARAM_STR);
-    $query->bindValue(':category_id', $category_id, PDO::PARAM_INT);
-    $query->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+    if ($id) {
+        $query = $pdo->prepare("UPDATE poll SET title = :title, description = :description,
+                                                category_id =:category_id, user_id =:user_id
+                                        WHERE id = :id");
+        $query->bindParam(':id', $id);
+    } else {
+        // Insérez le sondage dans la base de données
+        $query = $pdo->prepare("INSERT INTO poll (title, description, category_id, user_id) 
+                                VALUES (:title, :description, :category_id, :user_id)");
+    }
+
+
+    $query->bindParam(':title', $title);
+    $query->bindParam(':description', $description);
+    $query->bindParam(':category_id', $category_id);
+    $query->bindParam(':user_id', $user_id);
 
     if ($query->execute()) {
-        return $pdo->lastInsertId();
+        if ($id) {
+            return $id;
+        } else {
+            return $pdo->lastInsertId();;
+        }
     } else {
         return false;
     }
-
 }
 
 function savePollItem(PDO $pdo, int $poll_id, string $name, int $id = null): bool
